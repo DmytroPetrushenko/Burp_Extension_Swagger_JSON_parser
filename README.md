@@ -4,9 +4,3 @@ This script is used as an extension for BurpSuite. It downloads the json from th
 
 ## Instructions for use:
 The file to be loaded into BurpSuite is called - **api_to_burp.py**
-
-### Additional features:
-The file - main.py - allows you to check the following files for errors:
-  - api_to_swagger.py
-  - parser_json.py
-
