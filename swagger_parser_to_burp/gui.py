@@ -1,7 +1,7 @@
 from javax.swing import JPanel, JButton, JLabel, SwingConstants, JTextField, JTextArea, GroupLayout, JScrollPane
 from burp import ITab
 from api_to_swagger import get_swagger_json
-
+import datetime
 
 class BurpGui(ITab):
 
@@ -10,10 +10,10 @@ class BurpGui(ITab):
         self.panel = JPanel()
         self.apply_button = JButton('Apply', actionPerformed=self.load_site_map)
         self.url_field = JTextField('https://petstore.swagger.io/v2/swagger.json', 30)
+        self.log_pane = JScrollPane()
         self.url_label = JLabel("Enter the url of swagger:", SwingConstants.RIGHT)
         self.log_label = JLabel("The logs are here:")
         self.log_area = JTextArea()
-        self.log_pane = JScrollPane(self.log_area)
         self.log_area.setLineWrap(True)
         self.log_pane.setViewportView(self.log_area)
 
@@ -34,7 +34,7 @@ class BurpGui(ITab):
                                             )
                                   .addGap(30)
                                   .addComponent(self.log_label)
-                                  .addComponent(self.log_area, GroupLayout.PREFERRED_SIZE,
+                                  .addComponent(self.log_pane, GroupLayout.PREFERRED_SIZE,
                                                 GroupLayout.PREFERRED_SIZE, 700)
                                   )
 
@@ -48,7 +48,7 @@ class BurpGui(ITab):
                                           )
                                 .addGap(30)
                                 .addComponent(self.log_label)
-                                .addComponent(self.log_area, GroupLayout.PREFERRED_SIZE, 700,
+                                .addComponent(self.log_pane, GroupLayout.PREFERRED_SIZE, 700,
                                               GroupLayout.PREFERRED_SIZE)
                                 )
         return
@@ -63,3 +63,7 @@ class BurpGui(ITab):
         url_value = self.url_field.text
         swagger_dict = get_swagger_json(self, url_value)
         self.burp_extender_object.create_site_map(swagger_dict)
+
+    def set_log(self, message):
+        self.log_area.getDocument().insertString(0, message, None)
+        self.log_area.setCaretPosition(0)

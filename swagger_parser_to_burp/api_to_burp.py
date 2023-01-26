@@ -1,6 +1,7 @@
 import parser_json
 from burp import IBurpExtender, IHttpRequestResponse, IHttpService, ITab
 from gui import BurpGui
+import datetime
 
 
 class BurpExtender(IBurpExtender, ITab):
@@ -20,9 +21,8 @@ class BurpExtender(IBurpExtender, ITab):
         # swagger_dict = api_to_swagger.get_swagger_json('https://petstore.swagger.io/v2/swagger.json')
 
         if swagger_dict is not None:
-            self.gui.log_area.append('\r\nJSON was loaded to parser!\r\n\r\n')
+            self.gui.set_log(str(datetime.datetime.now()) + '  ***********  JSON was loaded to parser!\n')
         else:
-            self.gui.log_area.append('\r\nSomething is wrong! JSON was absent!\r\n')
             return
         parsed_json_dict = parser_json.transform_dir_httprequest(swagger_dict)
         host = parsed_json_dict.get('host')
@@ -30,8 +30,10 @@ class BurpExtender(IBurpExtender, ITab):
         for http_scheme in parsed_json_dict.get('http_schemes'):
             http_service = HttpService(http_scheme, host)
             for request in requests:
-                self.gui.log_area.append(request)
-                self.gui.log_area.append('\r\n/----------------------------------------/\r\n\r\n')
+                self.gui.set_log('\n\n' + str(datetime.datetime.now()) + ':\n'
+                                 + '  <--------------------begin-------------------->\n'
+                                 + request
+                                 + '  <---------------------end--------------------->\n' )
                 self.add_to_site_map(http_service, request, '')
 
     def add_to_site_map(self, http_service, request, response):
