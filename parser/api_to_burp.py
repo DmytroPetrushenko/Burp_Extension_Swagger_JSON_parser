@@ -18,8 +18,6 @@ class BurpExtender(IBurpExtender, ITab):
         self.gui.log_area.append('\r\nReady to parse!!\r\n')
 
     def create_site_map(self, swagger_dict):
-        # swagger_dict = api_to_swagger.get_swagger_json('https://petstore.swagger.io/v2/swagger.json')
-
         if swagger_dict is not None:
             self.gui.set_log(str(datetime.datetime.now()) + '  ***********  JSON was loaded to parser!\n')
         else:

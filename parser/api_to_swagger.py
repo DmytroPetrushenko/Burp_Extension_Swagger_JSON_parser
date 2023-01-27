@@ -1,6 +1,6 @@
-import requests
-import json
 import datetime
+import json
+import requests
 
 
 def get_swagger_json(gui, json_url):
