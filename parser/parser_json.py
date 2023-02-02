@@ -1,17 +1,25 @@
 from constant import CONTENT_TYPE_DEFAULT, CONTENT_TYPE, POST, PUT, PATHS, BASE_PATH, HOST, DICT, BOUNDARY
+from regex_matcher import get_host_from_url
 
 definitions = {}
 
-def transform_dir_httprequest(swagger_dict):
+
+def get_bath_path(base_path):
+    return '' if base_path == '/' else base_path
+
+
+def transform_dir_httprequest(swagger_dict, json_url, authorization):
     requests = []
     paths = swagger_dict.get(PATHS)
-    base_path = swagger_dict.get(BASE_PATH)
+    base_path = get_bath_path(swagger_dict.get(BASE_PATH))
     host = swagger_dict.get(HOST)
+    if host is None:
+        host = get_host_from_url(json_url)
     http_schemes = swagger_dict.get('schemes')
     definitions.update(swagger_dict.get('definitions'))
     for path_name, path_data in paths.items():
         for http_method_name, http_method_data in path_data.items():
-            requests.append(create_http_request(base_path + path_name, host, http_method_name, http_method_data))
+            requests.append(create_http_request(base_path + path_name, host, http_method_name, http_method_data, authorization))
     return {'requests': requests, HOST: host, 'http_schemes': http_schemes}
 
 
@@ -34,6 +42,12 @@ def convert_json_value(parameter):
 
     if type_value == 'string' and format_value is not None:
         return '\"' + DICT.get(type_value).get(format_value) + '\"'
+
+    if type_value == 'integer' and format_value is None:
+        return '\"' + str(DICT.get(type_value).get('default')) + '\"'
+
+    if type_value == 'object' and format_value is None:
+        return '\"' + str(DICT.get(type_value).get('default')) + '\"'
 
     if type_value == 'file' and format_value is None:
         return '\"' + DICT.get(type_value) + '\"'
@@ -110,7 +124,13 @@ def create_query(parameter):
     return parameter.get('name') + '=' + convert_json_value(items if items is not None else parameter).replace('\"', '')
 
 
-def create_http_request(path_name, host, http_method_name, http_method_data):
+def create_authorization(authorization):
+    if authorization == '':
+        return ''
+    return 'Authorization: Basic ' + authorization + '\r\n'
+
+
+def create_http_request(path_name, host, http_method_name, http_method_data, authorization):
     http_request_body = ''
     query = ''
     consumes = http_method_data.get('consumes')
@@ -124,7 +144,7 @@ def create_http_request(path_name, host, http_method_name, http_method_data):
             path_name = path_name if path_part is None else path_name.replace('{' + parameter.get('name') + '}',
                                                                               path_part)
         if tag_in == 'formData' and 'multipart/form-data' in consumes:
-            boundary= '--' + BOUNDARY + ('--' if index == length_body_parameters - 1 else '')
+            boundary = '--' + BOUNDARY + ('--' if index == length_body_parameters - 1 else '')
             if http_request_body == '':
                 http_request_body += boundary + '\r\n'
             http_request_body += create_form_data_upload_body(parameter, boundary) + '\r\n'
@@ -151,7 +171,8 @@ def create_http_request(path_name, host, http_method_name, http_method_data):
     http_request_body += '' if http_request_body.endswith('\r\n') or http_request_body == '' else '\r\n'
     http_request_result = http_method_name.upper() + ' ' + path_name + query + ' HTTP/1.1\r\n' \
                           + 'Host: ' + host + '\r\n' \
-                          + create_accept(http_method_data) \
+                          + create_accept(http_method_data)\
+                          + create_authorization(authorization)\
                           + create_content_type(http_method_data) \
                           + create_content_length(http_method_name) \
                           + http_request_body + '\r\n'

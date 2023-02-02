@@ -3,10 +3,11 @@ import json
 import requests
 
 
-def get_swagger_json(gui, json_url):
+def get_swagger_json(gui, json_url, authorization):
     json_loads = None
     try:
-        swagger_response = requests.get(json_url)
+        gui.set_log(authorization)
+        swagger_response = requests.get(json_url, headers={'Authorization': 'Basic ' + authorization})
         json_loads = json.loads(swagger_response.text)
     except ValueError:
         gui.set_log('\n' + str(datetime.datetime.now()) + '  ***********  '

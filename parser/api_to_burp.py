@@ -17,12 +17,12 @@ class BurpExtender(IBurpExtender, ITab):
         self.callbacks.addSuiteTab(self.gui)
         self.gui.log_area.append('\r\nReady to parse!!\r\n')
 
-    def create_site_map(self, swagger_dict):
+    def create_site_map(self, swagger_dict, json_url, authorization):
         if swagger_dict is not None:
             self.gui.set_log(str(datetime.datetime.now()) + '  ***********  JSON was loaded to parser!\n')
         else:
             return
-        parsed_json_dict = parser_json.transform_dir_httprequest(swagger_dict)
+        parsed_json_dict = parser_json.transform_dir_httprequest(swagger_dict, json_url, authorization)
         host = parsed_json_dict.get('host')
         requests = parsed_json_dict.get('requests')
         for http_scheme in parsed_json_dict.get('http_schemes'):
