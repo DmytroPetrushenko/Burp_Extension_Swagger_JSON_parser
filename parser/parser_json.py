@@ -1,5 +1,5 @@
-from parser.constant import *
-from parser.regex_matcher import get_host_from_url
+from constant import *
+from regex_matcher import get_host_from_url
 
 definitions = {}
 
@@ -150,7 +150,8 @@ def create_http_request(path_name, host, http_method_name, http_method_data, aut
         tag_in = parameter.get('in')
         if tag_in == 'path':
             raw_path_value = convert_json_value(parameter)
-            path_part = raw_path_value.replace('\"', '') if type(raw_path_value) is str and raw_path_value.find('\"') else raw_path_value
+            path_part = raw_path_value.replace('\"', '') \
+                if type(raw_path_value) is str and raw_path_value.find('\"') >= 0 else raw_path_value
             path_name = path_name if path_part is None else path_name.replace('{' + parameter.get('name') + '}',
                                                                               path_part)
         if tag_in == 'formData' and 'multipart/form-data' in consumes:
