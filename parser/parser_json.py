@@ -1,5 +1,5 @@
-from constant import CONTENT_TYPE_DEFAULT, CONTENT_TYPE, POST, PUT, PATHS, BASE_PATH, HOST, DICT, BOUNDARY
-from regex_matcher import get_host_from_url
+from parser.constant import *
+from parser.regex_matcher import get_host_from_url
 
 definitions = {}
 
@@ -19,8 +19,17 @@ def transform_dir_httprequest(swagger_dict, json_url, authorization):
     definitions.update(swagger_dict.get('definitions'))
     for path_name, path_data in paths.items():
         for http_method_name, http_method_data in path_data.items():
-            requests.append(create_http_request(base_path + path_name, host, http_method_name, http_method_data, authorization))
+            requests.append(
+                create_http_request(base_path + path_name, host, http_method_name, http_method_data, authorization))
     return {'requests': requests, HOST: host, 'http_schemes': http_schemes}
+
+
+def choose_value(type_value, example_value, format_value):
+    if example_value is not None:
+        return example_value
+    if format_value is None:
+        return DICT.get(type_value).get('default')
+    return DICT.get(type_value).get(format_value)
 
 
 def convert_json_value(parameter):
@@ -33,32 +42,32 @@ def convert_json_value(parameter):
         default_enum_value = enum_value[0]
         return '\"' + default_enum_value + '\"' if type_value == 'string' else default_enum_value
 
-    if type_value == 'string' and example_value is not None:
-        return '\"' + example_value + '\"'
+    elif type_value == 'integer':
+        return str(choose_value(type_value, example_value, format_value))
 
-    if (type_value == 'string' or type_value == 'boolean') and format_value is None:
-        str_bool_value = DICT.get(type_value).get('default')
-        return '\"' + str_bool_value + '\"' if type_value == 'string' else str_bool_value
+    elif type_value == 'string':
+        return '\"' + choose_value(type_value, example_value, format_value) + '\"'
 
-    if type_value == 'string' and format_value is not None:
-        return '\"' + DICT.get(type_value).get(format_value) + '\"'
+    elif type_value == 'number':
+        return str(choose_value(type_value, example_value, format_value))
 
-    if type_value == 'integer' and format_value is None:
-        return '\"' + str(DICT.get(type_value).get('default')) + '\"'
+    elif type_value == 'boolean':
+        return str(choose_value(type_value, example_value, format_value))
 
-    if type_value == 'object' and format_value is None:
-        return '\"' + str(DICT.get(type_value).get('default')) + '\"'
+    elif type_value == 'object':
+        return '\"' + choose_value(type_value, example_value, format_value) + '\"'
 
-    if type_value == 'file' and format_value is None:
-        return '\"' + DICT.get(type_value) + '\"'
+    elif type_value == 'file':
+        return '\"' + choose_value(type_value, example_value, format_value) + '\"'
 
-    if type_value == 'array':
+    elif type_value == 'array':
         return '[' + convert_json_value(parameter.get('items')) + ']'
 
-    if parameter.get('$ref') is not None:
+    elif parameter.get('$ref') is not None:
         return create_json_body(parameter)
 
-    return str(DICT.get(type_value).get(format_value))
+    else:
+        return '\"somthing new\"'
 
 
 def create_content_type(http_method_data):
@@ -140,7 +149,8 @@ def create_http_request(path_name, host, http_method_name, http_method_data, aut
         parameter = body_parameters[index]
         tag_in = parameter.get('in')
         if tag_in == 'path':
-            path_part = convert_json_value(parameter).replace('\"', '')
+            raw_path_value = convert_json_value(parameter)
+            path_part = raw_path_value.replace('\"', '') if type(raw_path_value) is str and raw_path_value.find('\"') else raw_path_value
             path_name = path_name if path_part is None else path_name.replace('{' + parameter.get('name') + '}',
                                                                               path_part)
         if tag_in == 'formData' and 'multipart/form-data' in consumes:
@@ -171,8 +181,8 @@ def create_http_request(path_name, host, http_method_name, http_method_data, aut
     http_request_body += '' if http_request_body.endswith('\r\n') or http_request_body == '' else '\r\n'
     http_request_result = http_method_name.upper() + ' ' + path_name + query + ' HTTP/1.1\r\n' \
                           + 'Host: ' + host + '\r\n' \
-                          + create_accept(http_method_data)\
-                          + create_authorization(authorization)\
+                          + create_accept(http_method_data) \
+                          + create_authorization(authorization) \
                           + create_content_type(http_method_data) \
                           + create_content_length(http_method_name) \
                           + http_request_body + '\r\n'
