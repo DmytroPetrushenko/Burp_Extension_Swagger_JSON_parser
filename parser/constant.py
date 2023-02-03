@@ -11,7 +11,7 @@ DICT = {
                    'password': 'password', 'uuid': 'UUID'},
         'number': {'default': 100500.0, 'float': 0.100500, 'double': 1.100500},
         'boolean': {'default': 'true'},
-        'object': {'default': 'OBJECT'},
+        'object': {'default': '{"JSON":"OBJECT"}'},
         'file': {'default': 'SOME_FILE'}
         }
 BOUNDARY = '---------------------------162414598940203848951676920930'

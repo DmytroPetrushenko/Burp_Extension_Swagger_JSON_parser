@@ -55,7 +55,7 @@ def convert_json_value(parameter):
         return str(choose_value(type_value, example_value, format_value))
 
     elif type_value == 'object':
-        return '\"' + choose_value(type_value, example_value, format_value) + '\"'
+        return choose_value(type_value, example_value, format_value)
 
     elif type_value == 'file':
         return '\"' + choose_value(type_value, example_value, format_value) + '\"'
