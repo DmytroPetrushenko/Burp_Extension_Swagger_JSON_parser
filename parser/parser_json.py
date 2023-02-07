@@ -8,11 +8,15 @@ def get_bath_path(base_path):
     return '' if base_path == '/' else base_path
 
 
-def transform_dir_httprequest(swagger_dict, json_url, authorization):
+def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
     requests = []
     paths = swagger_dict.get(PATHS)
     base_path = get_bath_path(swagger_dict.get(BASE_PATH))
     host = swagger_dict.get(HOST)
+
+    if host is None and json_url is None:
+        json_url = gui.create_popup_form()
+
     if host is None:
         host = get_host_from_url(json_url)
     http_schemes = swagger_dict.get('schemes')

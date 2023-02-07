@@ -22,7 +22,7 @@ class BurpExtender(IBurpExtender, ITab):
             self.gui.set_log(str(datetime.datetime.now()) + '  ***********  JSON was loaded to parser!\n')
         else:
             return
-        parsed_json_dict = parser_json.transform_dir_httprequest(swagger_dict, json_url, authorization)
+        parsed_json_dict = parser_json.transform_dir_httprequest(self.gui, swagger_dict, json_url, authorization)
         host = parsed_json_dict.get('host')
         requests = parsed_json_dict.get('requests')
         for http_scheme in parsed_json_dict.get('http_schemes'):
