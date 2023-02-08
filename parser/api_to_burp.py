@@ -1,4 +1,5 @@
 import parser_json
+from constant import *
 from burp import IBurpExtender, IHttpRequestResponse, IHttpService, ITab
 from gui import BurpGui
 import datetime
@@ -23,6 +24,9 @@ class BurpExtender(IBurpExtender, ITab):
         else:
             return
         parsed_json_dict = parser_json.transform_dir_httprequest(self.gui, swagger_dict, json_url, authorization)
+        if parsed_json_dict == EXIT:
+            self.gui.set_log('\n\n' + str(datetime.datetime.now())
+                             + '  *********** The PARSING was canceled by you!\n\n')
         host = parsed_json_dict.get('host')
         requests = parsed_json_dict.get('requests')
         for http_scheme in parsed_json_dict.get('http_schemes'):

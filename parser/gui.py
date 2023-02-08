@@ -131,10 +131,11 @@ class BurpGui(ITab):
             self.set_log('File selected: ' + file.getName() + '\n')
             reader = BufferedReader(FileReader(file))
             json_lines = reader.lines().collect(Collectors.toList())
-            for json in json_lines:
+            for json_value in json_lines:
                 self.set_log('\n' + str(datetime.datetime.now()) + '  ***********  '
-                             + 'Start parse json: ' + json + ' and create Site Map!\n')
-                json_dir = self.transform_json_to_dir(json)
+                             + 'Start parse json_value and create Site Map: \n<------------start------------>\n'
+                             + json_value + '\n<-------------end------------->\n')
+                json_dir = self.transform_json_to_dir(json_value)
                 self.burp_extender_object.create_site_map(json_dir, None, authorization)
 
     def create_authorization_credentials(self):
@@ -156,9 +157,11 @@ class BurpGui(ITab):
 
     def create_popup_form(self, message = 'A Host is absent in the json! Please enter the url of site!'):
         result_popup = JOptionPane.showInputDialog(self.panel, message, None)
-        if result_popup is None or not regex_matcher.get_host_from_url(result_popup):
+        if result_popup is None:
+            return ''
+        if not regex_matcher.get_host_from_url(result_popup):
             message = 'The url you entered is incorrect or does not match the specified format, sample url format: ' \
-                      'http(s):\\\\example.com\\. Please enter it again'
+                      'http(s)://example.com/. Please enter it again'
             return self.create_popup_form(message)
         return result_popup
 

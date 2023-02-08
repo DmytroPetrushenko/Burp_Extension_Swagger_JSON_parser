@@ -16,6 +16,8 @@ def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
 
     if host is None and json_url is None:
         json_url = gui.create_popup_form()
+        if json_url == '':
+            return EXIT
 
     if host is None:
         host = get_host_from_url(json_url)
