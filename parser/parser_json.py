@@ -2,6 +2,7 @@ from constant import *
 from regex_matcher import get_host_from_url
 
 definitions = {}
+security_definitions = {}
 
 
 def get_bath_path(base_path):
@@ -12,6 +13,7 @@ def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
     requests = []
     paths = swagger_dict.get(PATHS)
     base_path = get_bath_path(swagger_dict.get(BASE_PATH))
+
     host = swagger_dict.get(HOST)
 
     if host is None and json_url is None:
@@ -23,6 +25,7 @@ def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
         host = get_host_from_url(json_url)
     http_schemes = swagger_dict.get('schemes')
     definitions.update(swagger_dict.get('definitions'))
+    security_definitions.update(swagger_dict.get('securityDefinitions'))
     for path_name, path_data in paths.items():
         for http_method_name, http_method_data in path_data.items():
             requests.append(
@@ -80,7 +83,7 @@ def create_content_type(http_method_data):
     content_type_summary = CONTENT_TYPE + ': '
     content_type_list = http_method_data.get('consumes')
     if content_type_list is None:
-        return ''
+        return content_type_summary + CONTENT_TYPE_DEFAULT
     if CONTENT_TYPE_DEFAULT in content_type_list:
         content_type_summary += CONTENT_TYPE_DEFAULT
     else:
@@ -98,6 +101,8 @@ def create_content_length(http_method_name):
 def create_accept(http_method_data):
     accept_summary = 'Accept: '
     accept_list = http_method_data.get('produces')
+    if accept_list is None:
+        return ''
     list_length = len(accept_list)
     for index in range(list_length):
         if list_length - 1 == index:
@@ -122,6 +127,8 @@ def create_form_data_body(parameter):
 
 def create_json_body(schema):
     result = '{'
+    if schema.get('$ref') is None:
+        return str(schema)
     schema_definitions = schema.get('$ref').split('/')[2]
     object_properties = definitions.get(schema_definitions).get('properties')
     for name, value in object_properties.items():
@@ -190,10 +197,9 @@ def create_http_request(path_name, host, http_method_name, http_method_data, aut
                           + 'Host: ' + host + '\r\n' \
                           + create_accept(http_method_data) \
                           + create_authorization(authorization) \
-                          + create_content_type(http_method_data) \
+                          + (create_content_type(http_method_data) if http_method_name.upper != 'GET' else '') \
                           + create_content_length(http_method_name) \
                           + http_request_body + '\r\n'
 
-    # + 'Comment: ' + http_method_data.get('summary') + '\r\n' \
     print(http_request_result)
     return http_request_result
