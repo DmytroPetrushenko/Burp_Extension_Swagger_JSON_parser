@@ -9,6 +9,8 @@ def get_bath_path(base_path):
     return '' if base_path == '/' else base_path
 
 
+# The main method that transforms the data obtained from the graphical UI into the required format (requests, host,
+# http_schemes) to create the SiteMap
 def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
     requests = []
     paths = swagger_dict.get(PATHS)
@@ -33,6 +35,7 @@ def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
     return {'requests': requests, HOST: host, 'http_schemes': http_schemes}
 
 
+# The method selects the desired data type from the dictionary
 def choose_value(type_value, example_value, format_value):
     if example_value is not None:
         return example_value
@@ -41,6 +44,7 @@ def choose_value(type_value, example_value, format_value):
     return DICT.get(type_value).get(format_value)
 
 
+# The method generates data according to the received data types
 def convert_json_value(parameter):
     type_value = parameter.get('type')
     format_value = parameter.get('format')
@@ -79,6 +83,7 @@ def convert_json_value(parameter):
         return '\"somthing new\"'
 
 
+# The method creates one of the HEADERs of the HTTP request > Content type
 def create_content_type(http_method_data):
     content_type_summary = CONTENT_TYPE + ': '
     content_type_list = http_method_data.get('consumes')
@@ -92,12 +97,14 @@ def create_content_type(http_method_data):
     return content_type_summary + '\r\n'
 
 
+# The method creates one of the HEADERs of the HTTP request > Content-Length
 def create_content_length(http_method_name):
     if http_method_name.upper() in [POST, PUT]:
         return 'Content-Length: 1' + '\r\n\r\n'
     return ''
 
 
+# The method creates one of the HEADERs of the HTTP request > Accept
 def create_accept(http_method_data):
     accept_summary = 'Accept: '
     accept_list = http_method_data.get('produces')
@@ -112,6 +119,7 @@ def create_accept(http_method_data):
     return accept_summary + '\r\n'
 
 
+# The method creates one type of the BODY of the HTTP request > file
 def create_form_data_upload_body(parameter, boundary):
     name = parameter.get('name')
     file_name = '; filename=\"wolf_head.png\"' + '\r\n' + CONTENT_TYPE + ': image/png' if name == 'file' else ''
@@ -121,10 +129,12 @@ def create_form_data_upload_body(parameter, boundary):
     return form_data_body
 
 
+# The method creates one type of the BODY of the HTTP request > form
 def create_form_data_body(parameter):
     return parameter.get('name') + '=' + convert_json_value(parameter)
 
 
+# The method creates one type of the BODY of the HTTP request > JSON
 def create_json_body(schema):
     result = '{'
     if schema.get('$ref') is None:
@@ -141,17 +151,20 @@ def create_json_body(schema):
     return result + '}'
 
 
+# The method creates a query parameter in the URL of the HTTP request
 def create_query(parameter):
     items = parameter.get('items')
     return parameter.get('name') + '=' + convert_json_value(items if items is not None else parameter).replace('\"', '')
 
 
+# The method creates one of the HEADERs of the HTTP request > Authorization
 def create_authorization(authorization):
     if authorization == '':
         return ''
     return 'Authorization: Basic ' + authorization + '\r\n'
 
 
+# The method creates HTTP request in string type
 def create_http_request(path_name, host, http_method_name, http_method_data, authorization):
     http_request_body = ''
     query = ''

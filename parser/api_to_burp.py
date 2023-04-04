@@ -5,6 +5,7 @@ from gui import BurpGui
 import datetime
 
 
+# A BurpExtender class that will interact with the Burp API
 class BurpExtender(IBurpExtender, ITab):
 
     def __init__(self):
@@ -18,6 +19,8 @@ class BurpExtender(IBurpExtender, ITab):
         self.callbacks.addSuiteTab(self.gui)
         self.gui.log_area.append('\r\nReady to parse!!\r\n')
 
+    # This method transforms the dictionary obtained from JSON into the required data type for the add_to_site_map
+    # method
     def create_site_map(self, swagger_dict, json_url, authorization):
         if swagger_dict is not None:
             self.gui.set_log(str(datetime.datetime.now()) + '  ***********  JSON was loaded to parser!\n')
@@ -35,17 +38,18 @@ class BurpExtender(IBurpExtender, ITab):
                 self.gui.set_log('\n\n' + str(datetime.datetime.now()) + ':\n'
                                  + '  <--------------------begin-------------------->\n'
                                  + request
-                                 + '  <---------------------end--------------------->\n' )
+                                 + '  <---------------------end--------------------->\n')
                 self.add_to_site_map(http_service, request, '')
 
+    # A method that creates a SiteMap in Burp Suite
     def add_to_site_map(self, http_service, request, response):
         request_response = HttpRequestResponse(request, response, http_service, "", "")
         self.callbacks.addToSiteMap(request_response)
 
 
+# Custom class inherited from IHttpService, needed to create SiteMap in Burp Suite
 class HttpService(IHttpService):
 
-    # copied from https://github.com/modzero/burp-ResponseClusterer/blob/master/ResponseClusterer.py
     def __init__(self, http_scheme, host):
         self._protocol = http_scheme
         self._host = host
@@ -67,6 +71,7 @@ class HttpService(IHttpService):
         return "protocol: {}, host: {}, port: {}".format(self._protocol, self._host, self._port)
 
 
+# Custom class inherited from IHttpRequestResponse, needed to create SiteMap in Burp Suite
 class HttpRequestResponse(IHttpRequestResponse):
 
     def __init__(self, request, response, http_service, cmt, color):

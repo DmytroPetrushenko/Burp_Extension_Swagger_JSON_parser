@@ -11,6 +11,7 @@ import datetime
 import regex_matcher
 
 
+# The class responsible for creating the graphical shell in Burp Suit
 class BurpGui(ITab):
 
     def __init__(self, burp_extender_object):
@@ -106,22 +107,28 @@ class BurpGui(ITab):
                                 )
         return
 
+    # This method returns the caption that should appear on the custom tab when it is displayed
     def getTabCaption(self):
         return "Swagger to SiteMap"
 
+    # This method to obtain the component that should be used as the contents of the custom tab when it is displayed
     def getUiComponent(self):
         return self.panel
 
+    # This method passes the data received and converted from the graphical shell to the method that creates the SiteMap
+    # in Burp Suite
     def load_site_map(self, event):
         authorization = self.create_authorization_credentials()
         url_value = self.url_field.text
         swagger_dict = get_swagger_json(self, url_value, authorization)
         self.burp_extender_object.create_site_map(swagger_dict, url_value, authorization)
 
+    # The method displays logs on the graphical UI
     def set_log(self, message):
         self.log_area.getDocument().insertString(0, message, None)
         self.log_area.setCaretPosition(0)
 
+    # The method implements the file loading mechanism on the graphical UI
     def upload_file(self, event):
         authorization = self.create_authorization_credentials()
         file_chooser = JFileChooser()
@@ -138,6 +145,7 @@ class BurpGui(ITab):
                 json_dir = self.transform_json_to_dir(json_value)
                 self.burp_extender_object.create_site_map(json_dir, None, authorization)
 
+    # The method converts the authorization credentials received from the graphical UI into the desired format
     def create_authorization_credentials(self):
         login = self.auth_login_field.text
         password = self.auth_passw_field.text
@@ -146,6 +154,7 @@ class BurpGui(ITab):
             return base64.b64encode(message.encode('ascii'))
         return ''
 
+    # The method converts the string received from JSON into a dictionary
     def transform_json_to_dir(self, json_str):
         json_dir = None
         try:
@@ -155,7 +164,8 @@ class BurpGui(ITab):
                          + 'No JSON object could be decoded\n')
         return json_dir
 
-    def create_popup_form(self, message = 'A Host is absent in the json! Please enter the url of site!'):
+    # The method implements a popup window mechanism in case the host was not specified earlier
+    def create_popup_form(self, message='A Host is absent in the json! Please enter the url of site!'):
         result_popup = JOptionPane.showInputDialog(self.panel, message, None)
         if result_popup is None:
             return ''
@@ -164,5 +174,3 @@ class BurpGui(ITab):
                       'http(s)://example.com/. Please enter it again'
             return self.create_popup_form(message)
         return result_popup
-
-

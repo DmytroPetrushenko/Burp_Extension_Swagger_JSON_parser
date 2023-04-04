@@ -3,6 +3,7 @@ import json
 import requests
 
 
+# A method that loads SWAGGER JSON and converts it into a dictionary
 def get_swagger_json(gui, json_url, authorization):
     json_loads = None
     try:
@@ -11,7 +12,7 @@ def get_swagger_json(gui, json_url, authorization):
         json_loads = json.loads(swagger_response.text)
     except ValueError:
         gui.set_log('\n' + str(datetime.datetime.now()) + '  ***********  '
-                                                       + 'No JSON object could be decoded\n')
+                    + 'No JSON object could be decoded\n')
     except requests.ConnectionError:
         gui.set_log('\n' + str(datetime.datetime.now()) + '  ***********  '
                     + 'Some kind of error in the URL!!! Maybe, you should check your VPN connection! '
