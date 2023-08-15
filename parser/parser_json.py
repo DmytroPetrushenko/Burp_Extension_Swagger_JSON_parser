@@ -27,7 +27,8 @@ def transform_dir_httprequest(gui, swagger_dict, json_url, authorization):
         host = get_host_from_url(json_url)
     http_schemes = swagger_dict.get('schemes')
     definitions.update(swagger_dict.get('definitions'))
-    security_definitions.update(swagger_dict.get('securityDefinitions'))
+    if 'securityDefinitions' in swagger_dict.keys():
+        security_definitions.update(swagger_dict.get('securityDefinitions'))
     for path_name, path_data in paths.items():
         for http_method_name, http_method_data in path_data.items():
             requests.append(
